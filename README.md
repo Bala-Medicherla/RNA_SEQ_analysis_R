@@ -4,10 +4,10 @@ simple R-based analysis modeled after RNA-seq workflows, using simulated breast 
 ## Overview
 In this project, I used R to carry out an analysis inspired by standard RNA-seq workflows, reflecting approaches commonly applied in biomedical informatics and cancer research.
 
-**Objective**:
+## Objective:
 This project helps build a practical understanding of the core steps in gene expression analysis while becoming more comfortable with R, data visualization, and basic statistical comparisons. It also lays the groundwork for future research in biomedical informatics.
 
-**Dataset**:
+## Dataset:
 The dataset is a simulated breast cancer gene expression matrix with:
 3,000 genes
 20 samples
@@ -20,28 +20,28 @@ expression_matrix – gene IDs, gene symbols, and expression counts
 sample_metadata – sample IDs, tumor/normal labels, and subtype
 This structure resembles public breast cancer datasets (e.g., TCGA-BRCA).
 
-**Analysis Workflow**:
+## Analysis Workflow:
 This project follows a simplified but realistic genomics analysis workflow, similar to the early stages of an RNA-seq study.
 
-  1. Data import and preparation
-    The expression matrix and sample metadata were read from Excel files. Gene identifiers were separated from the numeric expression values, and the data were formatted into a matrix suitable for downstream statistical analysis.
+  1. **Data import and preparation**:
+     The expression matrix and sample metadata were read from Excel files. Gene identifiers were separated from the numeric expression values, and the data were formatted into a matrix suitable for downstream statistical analysis.
 
-2. Quality control (QC)
-Basic quality checks were performed by calculating library sizes (total expression per sample). These were visualized using bar plots to ensure that no samples showed extreme or unexpected behavior.
+  2. **Quality control (QC)**:
+     Basic quality checks were performed by calculating library sizes (total expression per sample). These were visualized using bar plots to ensure that no samples showed extreme or unexpected behavior.
 
-3. Log transformation
-A log₂(x + 1) transformation was applied to stabilize variance across genes. This step helps make downstream visualizations, such as PCA and heatmaps, easier to interpret.
+  3. **Log transformation**:
+      A log₂(x + 1) transformation was applied to stabilize variance across genes. This step helps make downstream visualizations, such as PCA and heatmaps, easier to interpret.
 
-4. Differential expression analysis (Tumor vs. Normal)
-Differential expression was assessed by performing a simple t-test for each gene to compare tumor and normal samples. For each gene, log₂ fold change, p-values, and FDR-adjusted p-values (using the Benjamini–Hochberg method) were calculated, and genes were ranked by statistical significance.
+  4. **Differential expression analysis (Tumor vs. Normal)**:
+      Differential expression was assessed by performing a simple t-test for each gene to compare tumor and normal samples. For each gene, log₂ fold change, p-values, and FDR-adjusted p-values (using the Benjamini–Hochberg method) were calculated, and genes were ranked by statistical significance.
 
-5. Visualization and interpretation
-Several plots were generated to summarize the results:
-Volcano plot to highlight up- and down-regulated genes.
-PCA plot to visualize sample-level separation between tumor and normal groups.
-Heatmap showing the top 50 differentially expressed genes.
+  5. **Visualization and interpretation**:
+      Plots which are generated to summarize the results:
+      Volcano plot to highlight up- and down-regulated genes.
+      PCA plot to visualize sample-level separation between tumor and normal groups.
+      Heatmap showing the top 50 differentially expressed genes.
 
-Key Results:
+## Key Results:
 
 The PCA shows that tumor and normal samples cluster separately based on gene expression, with additional variation likely reflecting breast cancer subtypes. The overall pattern matches what is typically observed in breast cancer studies.
 ![image alt](https://github.com/Bala-Medicherla/Breast-cancer-Gene-expression-analysis/blob/9837cead6d7ec579d7669ec7c8afd45fb221c1a5/pca_tumor_normal.png)
@@ -56,9 +56,8 @@ while the heatmap reveals structured expression patterns across samples.
 Quality control checks indicate consistent sample depth across all samples.
 Overall, these results are in line with patterns commonly reported in breast cancer gene expression studies.
 
-Skills Demonstrated:
+## Skills Demonstrated:
 This project helped me develop and demonstrate:
-
 R programming fundamentals
 Data wrangling with base R and tidy syntax
 ggplot2 visualization
@@ -66,7 +65,7 @@ Differential expression concepts
 Quality control for genomic datasets
 Reproducible workflow design
 
-Next Steps
+## Next Steps
 As I continue learning, I plan to:
 Analyze real breast cancer datasets (TCGA-BRCA)
 Explore pathway enrichment analysis (clusterProfiler)
