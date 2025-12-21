@@ -1,7 +1,7 @@
-Breast Cancer Gene Expression Analysis (Tumor vs Normal)
+# Breast Cancer Gene Expression Analysis (Tumor vs Normal)
 simple R-based analysis modeled after RNA-seq workflows, using simulated breast cancer data.
 
-Overview
+## Overview
 In this project, I used R to carry out an analysis inspired by standard RNA-seq workflows, reflecting approaches commonly applied in biomedical informatics and cancer research.
 
 The Objective of this project is to:
