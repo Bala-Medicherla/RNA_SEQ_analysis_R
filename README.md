@@ -4,11 +4,10 @@ simple R-based analysis modeled after RNA-seq workflows, using simulated breast 
 ## Overview
 In this project, I used R to carry out an analysis inspired by standard RNA-seq workflows, reflecting approaches commonly applied in biomedical informatics and cancer research.
 
-The Objective of this project is to:
+**Objective**:
 This project helps build a practical understanding of the core steps in gene expression analysis while becoming more comfortable with R, data visualization, and basic statistical comparisons. It also lays the groundwork for future research in biomedical informatics.
 
-Dataset:
-
+**Dataset**:
 The dataset is a simulated breast cancer gene expression matrix with:
 3,000 genes
 20 samples
@@ -17,17 +16,15 @@ The dataset is a simulated breast cancer gene expression matrix with:
 log2 fold-change patterns
 
 The dataset includes two files:
-
 expression_matrix – gene IDs, gene symbols, and expression counts
 sample_metadata – sample IDs, tumor/normal labels, and subtype
 This structure resembles public breast cancer datasets (e.g., TCGA-BRCA).
 
-Analysis Workflow
-
+**Analysis Workflow**:
 This project follows a simplified but realistic genomics analysis workflow, similar to the early stages of an RNA-seq study.
 
-1. Data import and preparation
-The expression matrix and sample metadata were read from Excel files. Gene identifiers were separated from the numeric expression values, and the data were formatted into a matrix suitable for downstream statistical analysis.
+  1. Data import and preparation
+    The expression matrix and sample metadata were read from Excel files. Gene identifiers were separated from the numeric expression values, and the data were formatted into a matrix suitable for downstream statistical analysis.
 
 2. Quality control (QC)
 Basic quality checks were performed by calculating library sizes (total expression per sample). These were visualized using bar plots to ensure that no samples showed extreme or unexpected behavior.
