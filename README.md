@@ -5,10 +5,10 @@ simple R-based analysis modeled after RNA-seq workflows, using simulated breast 
 In this project, I used R to carry out an analysis inspired by standard RNA-seq workflows, reflecting approaches commonly applied in biomedical informatics and cancer research.
 
 ## Objective:
-This project helps build a practical understanding of the core steps in gene expression analysis while becoming more comfortable with R, data visualization, and basic statistical comparisons. It also lays the groundwork for future research in biomedical informatics.
+This project focuses on developing a practical understanding of gene expression analysis, with an emphasis on working in R, visualizing biological data, and performing basic statistical analyses.
 
 ## Dataset:
-The dataset is a simulated breast cancer gene expression matrix with:
+The dataset used in this analyses is a simulated breast cancer gene expression matrix with:
 3,000 genes
 20 samples
 10 Tumor
@@ -24,10 +24,8 @@ This structure resembles public breast cancer datasets (e.g., TCGA-BRCA).
 This project follows a simplified but realistic genomics analysis workflow, similar to the early stages of an RNA-seq study.
 
   1. **Data import and preparation**:
-     The expression matrix and sample metadata were read from Excel files. Gene identifiers were separated from the numeric expression values, and the data were formatted into a matrix suitable for downstream statistical analysis.
-
-  2. **Quality control (QC)**:
-     Basic quality checks were performed by calculating library sizes (total expression per sample). These were visualized using bar plots to ensure that no samples showed extreme or unexpected behavior.
+     For this project, I generated a simulated RNA-seq dataset directly in R to reflect a realistic study setup. The gene expression values and sample information were      then organized into a clean matrix format so the data could be used for downstream analysis
+     Basic quality checks were performed by calculating library sizes (total expression per sample). These were visualized using bar plots to ensure that no samples showed     extreme or unexpected behavior.
 
   3. **Log transformation**:
       A log₂(x + 1) transformation was applied to stabilize variance across genes. This step helps make downstream visualizations, such as PCA and heatmaps, easier to interpret.
