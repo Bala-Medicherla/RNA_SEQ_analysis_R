@@ -7,11 +7,11 @@
 
 ## Objectives:
    The goal of this analysis are intentionally modest and educational:
-    1. Build a clean, reproducible RNA-seq–style analysis workflow in R
-    2. Explore whether tumor and normal breast tissue samples show global expression differences
-    3. Identify genes that appear differentially expressed between groups in a simplified setting
-    4. Practice standard visualization techniques commonly used in transcriptomics
-    5. Clearly document assumptions, limitations, and next steps
+   1. Build a clean, reproducible RNA-seq–style analysis workflow in R.
+   2. Explore whether tumor and normal breast tissue samples show global expression differences.
+   3. Identify genes that appear differentially expressed between groups in a simplified setting.
+   4. Practice standard visualization techniques commonly used in transcriptomics.
+   5. Clearly document assumptions, limitations, and next steps
 
 ## Data Source:
    The analysis uses publicly available breast cancer gene expression data derived from the TCGA Breast Invasive Carcinoma (TCGA-BRCA)          project.
