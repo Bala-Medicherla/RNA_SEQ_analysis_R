@@ -17,3 +17,4 @@ data/raw/
 *.tmpMANIFEST.txt
 *.Rproj
 .Rproj.user/
+MANIFEST.txt
