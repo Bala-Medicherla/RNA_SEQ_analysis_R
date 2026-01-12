@@ -6,7 +6,7 @@
    I created this project to practice and document the end to end thought process behind a basic RNA-seq analysis, using breast cancer as a     motivating example. The focus is on methodology, clarity, and reproducibility, rather than on discovering new biological findings.
 
 ## Objectives:
-   The goal of this analysis are intentionally modest and educational
+   The goal of this analysis are intentionally modest and educational:
     1. Build a clean, reproducible RNA-seq–style analysis workflow in R
     2. Explore whether tumor and normal breast tissue samples show global expression differences
     3. Identify genes that appear differentially expressed between groups in a simplified setting
