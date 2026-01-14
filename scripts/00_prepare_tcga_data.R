@@ -2,53 +2,40 @@
 # 00_prepare_tcga_data.R
 #
 # Goal:
-#   Download and prepare a reproducible subset of real-world
-#   RNA-seq gene expression data from the TCGA-BRCA project.
+#   Download and prepare TCGA-BRCA RNA-seq data, specifically
+#   targeting the "Luminal A" vs "Basal" biological comparison.
 #
-# Why this script exists:
-#   In real genomics projects, data acquisition is separated
-#   from analysis. This script focuses ONLY on obtaining
-#   expression data and saving clean objects that downstream
-#   scripts can reuse without re-downloading TCGA data.
-#
-# What this script does:
-#   1. Queries the Genomic Data Commons (GDC) for TCGA-BRCA
-#      RNA-seq STAR-count data
-#   2. Selects Primary Tumor and Solid Tissue Normal samples
-#   3. Limits sample size to keep the project lightweight
-#   4. Saves gene-level counts and sample metadata as .rds
+# Changes in Phase 2:
+#   - REMOVED sample limit (analyzing full relevant cohort)
+#   - ADDED PAM50 subtype filtering
+#   - Merged clinical subtype labels with expression data
 ############################################################
 
 suppressPackageStartupMessages({
   library(TCGAbiolinks)
   library(SummarizedExperiment)
+  library(dplyr)
 })
 
 # ----------------------------------------------------------
 # Project-level configuration
 # ----------------------------------------------------------
 
-# TCGA project identifier
 project_id <- "TCGA-BRCA"
-
-# RNA-seq processing workflow used by GDC
 workflow_type <- "STAR - Counts"
 
-# Sample types used for a simple, interpretable comparison
-sample_types <- c("Primary Tumor", "Solid Tissue Normal")
-
-# Limit samples per group to keep runtime reasonable
-max_samples_per_group <- 25
+# We focus on Primary Tumor samples and then filter by Subtype
+sample_types <- c("Primary Tumor")
 
 # Output directories
 dir.create("data/raw", showWarnings = FALSE, recursive = TRUE)
 dir.create("data/processed", showWarnings = FALSE, recursive = TRUE)
 
 # ----------------------------------------------------------
-# Query TCGA via the Genomic Data Commons
+# 1. Query TCGA via GDC
 # ----------------------------------------------------------
 
-message("Querying GDC for TCGA-BRCA RNA-seq data...")
+message("Querying GDC for TCGA-BRCA RNA-seq data (Primary Tumor)...")
 
 query <- GDCquery(
   project       = project_id,
@@ -59,57 +46,64 @@ query <- GDCquery(
 )
 
 # ----------------------------------------------------------
-# Select a reproducible subset of samples
+# 2. Download and Prepare Expression Data
 # ----------------------------------------------------------
 
-# TCGA metadata schemas can vary slightly over time,
-# so we defensively search for a column describing sample type
-query_metadata <- query$results[[1]]
-sample_type_column <- grep("sample_type", names(query_metadata), value = TRUE)[1]
-
-if (is.na(sample_type_column)) {
-  stop("Could not identify sample type column in TCGA metadata.")
-}
-
-# Select up to N samples per group to keep analysis manageable
-keep_indices <- unlist(lapply(sample_types, function(type) {
-  indices <- which(query_metadata[[sample_type_column]] == type)
-  indices[seq_len(min(length(indices), max_samples_per_group))]
-}))
-
-query$results[[1]] <- query_metadata[keep_indices, , drop = FALSE]
-
-message("Selected a limited, reproducible subset of samples.")
-
-# ----------------------------------------------------------
-# Download and prepare expression data
-# ----------------------------------------------------------
-
-message("Downloading RNA-seq files from GDC (this may take time)...")
+message("Downloading RNA-seq files (this may take significant time for the full cohort)...")
+# We will use 'method = "api"' which is standard.
 GDCdownload(query, directory = "data/raw")
 
-message("Preparing expression data into a SummarizedExperiment object...")
+message("Preparing SummarizedExperiment object...")
 se <- GDCprepare(query, directory = "data/raw")
 
 # ----------------------------------------------------------
-# Extract counts and metadata for downstream analysis
+# 3. Retrieve and Merge Subtype Information (PAM50)
 # ----------------------------------------------------------
 
-# Gene-level raw counts (rows = genes, columns = samples)
-counts_matrix <- assay(se)
+message("Retrieving PAM50 subtype data...")
+# Recent TCGAbiolinks versions use PanCancerAtlas_subtypes or similar
+subtypes <- TCGAbiolinks::TCGAquery_subtype(tumor = "BRCA")
 
-# Sample-level metadata (phenotype, sample type, etc.)
-sample_metadata <- as.data.frame(colData(se))
+# Extract barcode structure to merge
+# se colData has 'patient' column usually, or we use the barcode.
+# The 'patient' column in 'se' matches 'patient' in 'subtypes'.
+
+meta <- as.data.frame(colData(se))
+
+# Merge metadata with subtypes
+# "patient" is the common key (e.g., TCGA-A2-A04N)
+meta_with_subtypes <- merge(meta, subtypes, by = "patient", all.x = TRUE)
+
+# Restore row order to match the counts matrix columns
+rownames(meta_with_subtypes) <- meta_with_subtypes$barcode
+meta_with_subtypes <- meta_with_subtypes[colnames(se), ]
 
 # ----------------------------------------------------------
-# Save clean objects for downstream scripts
+# 4. Filter for Luminal A and Basal
+# ----------------------------------------------------------
+
+target_subtypes <- c("Luminal A", "Basal")
+
+# The column is usually 'BRCA_Subtype_PAM50'
+if (!"BRCA_Subtype_PAM50" %in% names(meta_with_subtypes)) {
+  warning("PAM50 column not found. Checking available columns...")
+  # Fallback logic could go here, but for now we assume standard structure
+}
+
+keep_mask <- meta_with_subtypes$BRCA_Subtype_PAM50 %in% target_subtypes
+
+# Apply filter
+counts_matrix <- assay(se)[, keep_mask]
+sample_metadata <- meta_with_subtypes[keep_mask, ]
+
+message(paste("Filtered to", nrow(sample_metadata), "samples."))
+message(paste("Breakdown:", paste(table(sample_metadata$BRCA_Subtype_PAM50), collapse=" / ")))
+
+# ----------------------------------------------------------
+# 5. Save Clean Objects
 # ----------------------------------------------------------
 
 saveRDS(counts_matrix,   "data/processed/counts_matrix.rds")
 saveRDS(sample_metadata, "data/processed/sample_metadata.rds")
 
-message("Saved processed TCGA objects:")
-message("- data/processed/counts_matrix.rds")
-message("- data/processed/sample_metadata.rds")
-
-message("TCGA-BRCA data preparation step completed successfully.")
+message("Saved processed TCGA objects (Luminal A vs Basal).")
