@@ -111,15 +111,32 @@ se <- GDCprepare(query, directory = "data/raw")
 # ----------------------------------------------------------
 
 se_meta <- as.data.frame(colData(se))
-se_meta$patient <- substr(se_meta$barcode, 1, 12)
+# DEBUG: Inspect SE metadata before merge
+message("Columns in colData(se):")
+print(grep("Subtype", names(se_meta), value = TRUE))
+
+message("Columns in subtypes object:")
+print(grep("Subtype", names(subtypes), value = TRUE))
 
 # Re-merge to ensure metadata is attached to the final SE object
 se_meta_merged <- merge(se_meta, subtypes, by = "patient", all.x = TRUE)
 
+message("Columns after merge:")
+print(grep("Subtype", names(se_meta_merged), value = TRUE))
+
 # HANDLE COLUMN VARIATIONS
 # If paper_BRCA_Subtype_PAM50 exists (from GDCprepare), use it.
 if ("paper_BRCA_Subtype_PAM50" %in% names(se_meta_merged)) {
+  message("Found paper_BRCA_Subtype_PAM50, using it.")
   se_meta_merged$BRCA_Subtype_PAM50 <- se_meta_merged$paper_BRCA_Subtype_PAM50
+}
+
+# Check if we have it now (either from merge or rename)
+if ("BRCA_Subtype_PAM50" %in% names(se_meta_merged)) {
+  message("Found BRCA_Subtype_PAM50.")
+} else {
+  message("WARNING: BRCA_Subtype_PAM50 NOT found. checking for .x / .y variants")
+  print(grep("PAM50", names(se_meta_merged), value=TRUE))
 }
 
 # Normalize "LumA" -> "Luminal A"
