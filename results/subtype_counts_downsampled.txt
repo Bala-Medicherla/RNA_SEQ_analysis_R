@@ -1,0 +1,3 @@
+ Var1 Freq
+1 Basal 197
+2 Luminal A 200
