@@ -3,13 +3,11 @@
 #
 # Goal:
 #   Identify genes that are differentially expressed between
-#   tumor and normal breast tissue using DESeq2.
+#   Basal-like and Luminal A breast cancer subtypes.
 #
-# Why this step matters:
-#   RNA-seq data are counts, not continuous measurements.
-#   DESeq2 models these counts using a negative binomial
-#   framework that properly accounts for biological and
-#   technical variability.
+# Changes:
+#   - Contrast: Basal vs Luminal A (Reference = Luminal A)
+#   - Design: ~ BRCA_Subtype_PAM50
 ############################################################
 
 suppressPackageStartupMessages({
@@ -27,22 +25,21 @@ dir.create("results", showWarnings = FALSE, recursive = TRUE)
 counts_matrix   <- readRDS("data/processed/counts_matrix.rds")
 sample_metadata <- readRDS("data/processed/sample_metadata.rds")
 
-# Identify sample type column defensively
-sample_type_col <- grep("sample_type", names(sample_metadata), value = TRUE)[1]
+# Ensure subtype column exists
+subtype_col <- "BRCA_Subtype_PAM50"
 
-if (is.na(sample_type_col)) {
-  stop("Sample type column not found in sample metadata.")
+if (!subtype_col %in% names(sample_metadata)) {
+  stop("Subtype column not found in sample metadata.")
 }
 
 # Define analysis groups
-sample_metadata$group <- factor(sample_metadata[[sample_type_col]])
+sample_metadata$group <- factor(sample_metadata[[subtype_col]])
 
-# Keep only Tumor vs Normal samples
-keep_samples <- sample_metadata$group %in%
-  c("Primary Tumor", "Solid Tissue Normal")
+# Explicitly set "Luminal A" as the reference level
+# valid levels: "Luminal A", "Basal"
+sample_metadata$group <- relevel(sample_metadata$group, ref = "Luminal A")
 
-counts_matrix   <- counts_matrix[, keep_samples]
-sample_metadata <- sample_metadata[keep_samples, ]
+message(paste("Comparison levels:", paste(levels(sample_metadata$group), collapse=" vs ")))
 
 # ----------------------------------------------------------
 # Construct DESeq2 dataset
@@ -61,13 +58,12 @@ dds <- dds[rowSums(counts(dds)) >= 10, ]
 # Run DESeq2 model
 # ----------------------------------------------------------
 
+message("Running DESeq2 (this may take a moment)...")
 dds <- DESeq(dds)
 
-# Extract results for Tumor vs Normal comparison
-de_results <- results(
-  dds,
-  contrast = c("group", "Primary Tumor", "Solid Tissue Normal")
-)
+# Extract results for Basal vs Luminal A
+# Since we set Luminal A as reference, the coefficient is "group_Basal_vs_Reference"
+de_results <- results(dds, contrast = c("group", "Basal", "Luminal A"))
 
 # Convert to tidy data frame for inspection and export
 de_results_df <- as.data.frame(de_results) |>
@@ -80,11 +76,11 @@ de_results_df <- as.data.frame(de_results) |>
 
 write.csv(
   de_results_df,
-  "results/deseq2_results_tumor_vs_normal.csv",
+  "results/deseq2_results_Basal_vs_LuminalA.csv",
   row.names = FALSE
 )
 
 # Save DESeq2 object for downstream visualization
 saveRDS(dds, "data/processed/dds_object.rds")
 
-message("DESeq2 differential expression analysis completed.")
+message("DESeq2 analysis (Basal vs Luminal A) completed.")
