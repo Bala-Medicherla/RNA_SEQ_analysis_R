@@ -1,14 +1,9 @@
 ############################################################
-# 00_prepare_tcga_data.R
+# 00_prepare_tcga_data.R (Debug Version)
 #
 # Goal:
-#   Download and prepare TCGA-BRCA RNA-seq data, specifically
-#   targeting the "Luminal A" vs "Basal" biological comparison.
-#
-# Changes in Phase 2 (Optimized):
-#   - Fetches full cohort metadata.
-#   - Filters query for Luminal A / Basal *BEFORE* loading data.
-#   - Caps at 200 samples/group to fit in 16GB RAM.
+#   Download and prepare TCGA-BRCA RNA-seq data.
+#   DEBUG: Ensure both Basal and Luminal A are retrieved.
 ############################################################
 
 suppressPackageStartupMessages({
@@ -18,7 +13,7 @@ suppressPackageStartupMessages({
 })
 
 # ----------------------------------------------------------
-# Project-level configuration
+# Configuration
 # ----------------------------------------------------------
 
 project_id <- "TCGA-BRCA"
@@ -30,11 +25,10 @@ dir.create("data/raw", showWarnings = FALSE, recursive = TRUE)
 dir.create("data/processed", showWarnings = FALSE, recursive = TRUE)
 
 # ----------------------------------------------------------
-# 1. Query TCGA via GDC
+# 1. Query & Filter (Memory Safe)
 # ----------------------------------------------------------
 
-message("Querying GDC for TCGA-BRCA RNA-seq data (Primary Tumor)...")
-
+message("Querying GDC...")
 query <- GDCquery(
   project       = project_id,
   data.category = "Transcriptome Profiling",
@@ -43,49 +37,49 @@ query <- GDCquery(
   sample.type   = sample_types
 )
 
-# ----------------------------------------------------------
-# 2. Filter Query by Subtype (RAM Optimization)
-# ----------------------------------------------------------
-
-message("Retrieving PAM50 subtype data to filter BEFORE download/load...")
+message("Retrieving Subtypes...")
 subtypes <- TCGAbiolinks::TCGAquery_subtype(tumor = "BRCA")
 
-# Extract metadata contents from the query object
 query_results <- query$results[[1]]
-
-# The query results have 'cases' (submitter_id) or 'sample.submitter_id'
-# We need to map these to the 'patient' column in subtypes.
-# 'cases' looks like: TCGA-AR-A1AS-01A-11R-A128-07
-# 'patient' looks like: TCGA-AR-A1AS
-
-# Add patient ID to query results
 query_results$patient <- substr(query_results$cases, 1, 12)
 
-# Merge with subtype info
-# using all.x=TRUE to keep query rows, but we only want matches
+# Merge
 query_merged <- merge(query_results, subtypes, by = "patient", all.x = FALSE)
 
-# Handle column name variations
-if ("paper_BRCA_Subtype_PAM50" %in% names(query_merged)) {
-  query_merged$BRCA_Subtype_PAM50 <- query_merged$paper_BRCA_Subtype_PAM50
-}
+# Merge
+query_merged <- merge(query_results, subtypes, by = "patient", all.x = FALSE)
 
-target_subtypes <- c("Luminal A", "Basal")
+# Note: TCGAquery_subtype returns "LumA", "Basal", "Her2", "LumB", "Normal"
+# We do not need to rename 'paper_' columns as the default is 'BRCA_Subtype_PAM50'
 
-# Filter for targets
+target_subtypes <- c("LumA", "Basal")
 query_filtered <- query_merged[query_merged$BRCA_Subtype_PAM50 %in% target_subtypes, ]
 
+# Normalize labels for downstream readability ("LumA" -> "Luminal A")
+query_filtered$BRCA_Subtype_PAM50 <- ifelse(
+  query_filtered$BRCA_Subtype_PAM50 == "LumA", "Luminal A", query_filtered$BRCA_Subtype_PAM50
+)
+
+# Update target to match the new readable labels
+target_subtypes <- c("Luminal A", "Basal")
+
+
+# DEBUG: Print found subtypes
+print("Subtypes found in query:")
+print(table(query_filtered$BRCA_Subtype_PAM50))
+
+if (length(unique(query_filtered$BRCA_Subtype_PAM50)) < 2) {
+  stop("CRITICAL ERROR: Found less than 2 subtypes! Cannot perform comparison.")
+}
+
 # ----------------------------------------------------------
-# 3. Downsample to avoid Memory Crash
+# 2. Downsample
 # ----------------------------------------------------------
 
-message("Downsampling to avoid 16GB RAM limit...")
+message("Downsampling...")
 set.seed(42)
-
-# Split by subtype
 indices_by_type <- split(seq_len(nrow(query_filtered)), query_filtered$BRCA_Subtype_PAM50)
 
-# Select random indices
 keep_indices <- unlist(lapply(indices_by_type, function(idx) {
   if (length(idx) > max_samples_per_type) {
     sample(idx, max_samples_per_type)
@@ -95,63 +89,62 @@ keep_indices <- unlist(lapply(indices_by_type, function(idx) {
 }))
 
 query_final_df <- query_filtered[keep_indices, ]
-
-# IMPORTANT: sync the 'results' slot of the query object
-# We must use the original columns matching what GDCquery produced
-original_cols <- colnames(query$results[[1]])
-# We need to ensure we only keep columns that were in the original query result
-# (merge added many subtype columns)
-
-# However, we need to pass the FILTERED rows back to the query object
-# match barcodes (cases)
 final_cases <- query_final_df$cases
 
-# Filter the original query object
+# Update Query Object
 query$results[[1]] <- query$results[[1]][query$results[[1]]$cases %in% final_cases, ]
 
 message(paste("Final query size:", nrow(query$results[[1]]), "samples."))
 
 # ----------------------------------------------------------
-# 4. Download and Prepare (Now Safe)
+# 3. Download & Prepare
 # ----------------------------------------------------------
 
-message("Downloading filtered RNA-seq files...")
+message("Downloading (Filtered)...")
 GDCdownload(query, directory = "data/raw")
 
-message("Preparing SummarizedExperiment object (Memory Safe)...")
+message("Preparing SE...")
 se <- GDCprepare(query, directory = "data/raw")
 
 # ----------------------------------------------------------
-# 5. Re-attach Metadata (Safety Step)
+# 4. Attach Metadata (Double Check)
 # ----------------------------------------------------------
 
-# While we filtered by subtype, the 'se' object colData might be raw GDC metadata.
-# We need to attach the PAM50 labels definitively for downstream scripts.
-
-# Get the patient IDs again from the SE object
 se_meta <- as.data.frame(colData(se))
 se_meta$patient <- substr(se_meta$barcode, 1, 12)
 
-# Merge again (safe)
+# Re-merge to ensure metadata is attached to the final SE object
 se_meta_merged <- merge(se_meta, subtypes, by = "patient", all.x = TRUE)
 
-if ("paper_BRCA_Subtype_PAM50" %in% names(se_meta_merged)) {
-  se_meta_merged$BRCA_Subtype_PAM50 <- se_meta_merged$paper_BRCA_Subtype_PAM50
-}
+# Normalize "LumA" -> "Luminal A" in the final object too
+se_meta_merged$BRCA_Subtype_PAM50 <- ifelse(
+  se_meta_merged$BRCA_Subtype_PAM50 == "LumA", "Luminal A", se_meta_merged$BRCA_Subtype_PAM50
+)
 
-# Ensure row order
+# Ensure checking logic works
+# Some samples might be NA if they were in query but merge failed?
+se_meta_merged <- se_meta_merged[!is.na(se_meta_merged$BRCA_Subtype_PAM50), ]
+
+# Restore order
 rownames(se_meta_merged) <- se_meta_merged$barcode
-se_meta_merged <- se_meta_merged[colnames(se), ]
+se_meta_merged <- se_meta_merged[colnames(se), ] # This might introduce NAs if barcode missing? 
+# Better: subset SE to match meta
+common_barcodes <- intersect(colnames(se), rownames(se_meta_merged))
+se <- se[, common_barcodes]
+se_meta_merged <- se_meta_merged[common_barcodes, ]
 
-# Final check
 counts_matrix <- assay(se)
 sample_metadata <- se_meta_merged
 
+# DEBUG: Print final table
+print("Final Metadata Subtypes:")
+print(table(sample_metadata$BRCA_Subtype_PAM50))
+
 # ----------------------------------------------------------
-# 6. Save
+# 5. Save
 # ----------------------------------------------------------
 
 saveRDS(counts_matrix,   "data/processed/counts_matrix.rds")
 saveRDS(sample_metadata, "data/processed/sample_metadata.rds")
 
-message("Saved processed TCGA objects (Optimized).")
+message("Saved.")
