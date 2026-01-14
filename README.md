@@ -1,58 +1,42 @@
 # Breast Cancer Gene Expression Analysis using TCGA-BRCA (RNA-seq workflow in R)
 
 ## Problem Statement:
-   Gene expression analysis is a core tool in modern cancer research, but working with RNA-seq data involves much more than running a few       statistical tests. Before any biological conclusions can be made, analysts must carefully organize data, perform quality checks, choose      appropriate transformations, and explore patterns at both the sample and gene level.
-   
-   I created this project to practice and document the end to end thought process behind a basic RNA-seq analysis, using breast cancer as a     motivating example. The focus is on methodology, clarity, and reproducibility, rather than on discovering new biological findings.
+   Gene expression analysis is a core tool in modern cancer research. While simplified "Tumor vs Normal" comparisons are common entry points, real-world biological insights require interrogating **molecular subtypes** and **functional pathways**.
+
+   I created this project to demonstrate a rigid, end-to-end RNA-seq analysis pipeline applied to the TCGA-BRCA cohort. This project moves beyond basic tutorials by addressing clinical heterogeneity (Subtypes) and functional context (GSEA).
 
 ## Objectives:
-   The goal of this analysis are intentionally modest and educational:
-   1. Build a clean, reproducible RNA-seq–style analysis workflow in R.
-   2. Explore whether tumor and normal breast tissue samples show global expression differences.
-   3. Identify genes that appear differentially expressed between groups in a simplified setting.
-   4. Practice standard visualization techniques commonly used in transcriptomics.
-   5. Clearly document assumptions, limitations, and next steps
+   1. **Build a reproducible pipeline**: From raw count download to functional enrichment.
+   2. **Interrogate Molecular Subtypes**: specifically comparing **Basal-like** (aggressive) vs **Luminal A** (hormone receptor-positive) tumors.
+   3. **Identify Drivers**: Detect differential expressed genes defining these subtypes.
+   4. **Pathway Analysis**: Use Gene Set Enrichment Analysis (GSEA) to understand the biological processes varying between subtypes.
 
 ## Data Source:
-   The analysis uses publicly available breast cancer gene expression data derived from the TCGA Breast Invasive Carcinoma (TCGA-BRCA)          project.
-   To keep the workflow lightweight and reproducible.
-   1. A curated subset of tumor and normal samples is used.
-   2. Only expression data and minimal sample annotations are included.
-   3. No controlled or patient identifying information is accessed.
-    
+   The analysis uses the complete available set of Primary Tumor samples from the **TCGA Breast Invasive Carcinoma (TCGA-BRCA)** project.
+   - **Data Fetching**: Automated via `TCGAbiolinks` to ensure reproducibility.
+   - **Subtyping**: Samples are filtered using **PAM50** labels (Luminal A vs Basal).
+
 ## Methods Overview:
- **Data preparation**:
-   Expression values and sample metadata are loaded and aligned. Sample labels are checked to ensure that tumor and normal groups are           correctly defined before any analysis begins.
-   
+ **Data Preparation**:
+   Downloads the full TCGA-BRCA RNA-seq cohort. Clinical metadata is merged with expression data to assign PAM50 subtypes.
+
  **Quality Control**:
-   Simple quality control checks are performed by examining library sizes (total expression per sample). These plots help confirm that no       samples show extreme behavior that could distort downstream analyses.
-   
- **Transformation for exploration**:
-   A log based transformation is applied to stabilize variance for visualization purposes. This step is used only for exploratory analysis      and is clearly distinguished from formal statistical modeling.
-   
- **Differential expression(tumor vs normal)**:
-   Genes are compared between tumor and normal samples to identify expression differences. Statistical testing is performed at the gene         level, and p-values are adjusted to control the false discovery rate. Results are interpreted cautiously, with attention to both effect      size and statistical significance.
-   
+   Library size assessment and Variance Stabilizing Transformation (VST) specifically for visualizing subtype separation.
+
+ **Differential Expression (Basal vs Luminal A)**:
+   Uses `DESeq2` to model count data: `~ BRCA_Subtype_PAM50`.
+   - **Contrast**: Basal vs Luminal A.
+   - **Statistical Rigor**: Corrects for multiple testing (Benjamini-Hochberg).
+
+ **Gene Set Enrichment Analysis (GSEA)**:
+   Performs functional enrichment using `fgsea` and the **MSigDB Hallmark** gene sets. This identifies upregulated pathways (e.g., Cell Cycle in Basal) vs downregulated ones (e.g., Estrogen Response).
+
  **Visualization**:
-   Several standard plots are generated to summarize the data:
-   1. Principal Component Analysis (PCA) to assess sample-level separation.
-   2. Volcano plots to visualize gene-level effects and significance.
-   3. Heatmaps to examine expression patterns among top-ranked genes.
+   - **PCA**: To visualize global separation of subtypes.
+   - **Volcano Plots**: To view effect sizes vs significant.
+   - **Heatmaps**: To view top gene signatures.
+   - **GSEA Plots**: To view enriched pathways.
 
-
-## What the results show:
-   At a high level, the analysis illustrates patterns commonly seen in breast cancer expression studies:
-   1. Tumor and normal samples tend to separate in low-dimensional space.
-   2. A subset of genes shows consistent expression differences between groups.
-   3. Top differentially expressed genes display structured patterns across samples.
-  These findings are illustrative, not confirmatory, and are used to practice interpretation rather than draw biological conclusions.
-
-## Limitations:
-   This project intentionally keeps scope limited:
-   1. Only a subset of samples is analyzed.
-   2. Differential expression is performed using a simplified approach.
-   3. No pathway or gene-set enrichment analysis is included.
-   These choices were made to prioritize clarity and learning over completeness.
-
-## Honest note:
-   This project reflects my effort to move beyond running code towards **understanding the reasoning behind genomic data analysis**. It         represents a learning step.
+## Limitations & Future Work:
+   1. **Survival Integration**: Future phases will integrate clinical survival data (Unix & Cox regression) to link gene expression to patient outcomes.
+   2. **Multi-Omics**: Integrating CNV or Methylation data would provide a systems biology view.
