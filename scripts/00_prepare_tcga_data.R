@@ -23,6 +23,7 @@ max_samples_per_type <- 200
 
 dir.create("data/raw", showWarnings = FALSE, recursive = TRUE)
 dir.create("data/processed", showWarnings = FALSE, recursive = TRUE)
+dir.create("results", showWarnings = FALSE, recursive = TRUE)
 
 # ----------------------------------------------------------
 # 1. Query & Filter (Memory Safe)
@@ -68,6 +69,14 @@ target_subtypes <- c("Luminal A", "Basal")
 print("Subtypes found in query:")
 print(table(query_filtered$BRCA_Subtype_PAM50))
 
+subtype_counts <- table(query_filtered$BRCA_Subtype_PAM50)
+write.table(
+  subtype_counts,
+  file = "results/subtype_counts_raw.txt",
+  quote = FALSE,
+  col.names = NA
+)
+
 if (length(unique(query_filtered$BRCA_Subtype_PAM50)) < 2) {
   stop("CRITICAL ERROR: Found less than 2 subtypes! Cannot perform comparison.")
 }
@@ -90,6 +99,14 @@ keep_indices <- unlist(lapply(indices_by_type, function(idx) {
 
 query_final_df <- query_filtered[keep_indices, ]
 final_cases <- query_final_df$cases
+
+subtype_counts_downsampled <- table(query_final_df$BRCA_Subtype_PAM50)
+write.table(
+  subtype_counts_downsampled,
+  file = "results/subtype_counts_downsampled.txt",
+  quote = FALSE,
+  col.names = NA
+)
 
 # Update Query Object
 query$results[[1]] <- query$results[[1]][query$results[[1]]$cases %in% final_cases, ]
