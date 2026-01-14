@@ -116,10 +116,20 @@ se_meta$patient <- substr(se_meta$barcode, 1, 12)
 # Re-merge to ensure metadata is attached to the final SE object
 se_meta_merged <- merge(se_meta, subtypes, by = "patient", all.x = TRUE)
 
-# Normalize "LumA" -> "Luminal A" in the final object too
-se_meta_merged$BRCA_Subtype_PAM50 <- ifelse(
-  se_meta_merged$BRCA_Subtype_PAM50 == "LumA", "Luminal A", se_meta_merged$BRCA_Subtype_PAM50
-)
+# HANDLE COLUMN VARIATIONS
+# If paper_BRCA_Subtype_PAM50 exists (from GDCprepare), use it.
+if ("paper_BRCA_Subtype_PAM50" %in% names(se_meta_merged)) {
+  se_meta_merged$BRCA_Subtype_PAM50 <- se_meta_merged$paper_BRCA_Subtype_PAM50
+}
+
+# Normalize "LumA" -> "Luminal A"
+if ("BRCA_Subtype_PAM50" %in% names(se_meta_merged)) {
+  se_meta_merged$BRCA_Subtype_PAM50 <- ifelse(
+    se_meta_merged$BRCA_Subtype_PAM50 == "LumA", "Luminal A", se_meta_merged$BRCA_Subtype_PAM50
+  )
+} else {
+  warning("Still could not find BRCA_Subtype_PAM50 in final metadata.")
+}
 
 # Ensure checking logic works
 # Some samples might be NA if they were in query but merge failed?
