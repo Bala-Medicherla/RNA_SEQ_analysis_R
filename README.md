@@ -36,7 +36,52 @@
    - **Volcano Plots**: To view effect sizes vs significant.
    - **Heatmaps**: To view top gene signatures.
    - **GSEA Plots**: To view enriched pathways.
+  
+## Quick Start (End-to-End)
+1. **Install dependencies** (Bioconductor + CRAN):
+   ```r
+   source("scripts/install_dependencies.R")
+   ```
+2. **Run the full pipeline** (download → QC → DE → GSEA):
+   ```r
+   source("run_pipeline.R")
+   ```
+
+> **Note**: Data downloads can take time depending on network speed.
+
+## Outputs (Generated Files)
+**Results tables**
+- `results/deseq2_results_Basal_vs_LuminalA.csv`: DESeq2 results.
+- `results/gsea_results.csv`: GSEA results.
+- `results/subtype_counts_raw.txt`: subtype counts before downsampling.
+- `results/subtype_counts_downsampled.txt`: subtype counts after downsampling.
+- `results/sessionInfo.txt`: captured R session info for reproducibility.
+
+**Figures**
+- `figures/pca_subtypes.png`
+- `figures/volcano_basal_vs_luminalA.png`
+- `figures/heatmap_top_genes.png`
+- `figures/gsea_summary.png`
+- `figures/qc_library_size.png`
+
+## Reproducibility Notes
+- **Fixed random seed**: used during downsampling to keep results consistent across runs.
+- **Session tracking**: `results/sessionInfo.txt` is written at the end of the pipeline.
+- **Deterministic inputs**: data is sourced programmatically from TCGA via `TCGAbiolinks`.
+
+## Data & Design Choices
+- **Cohort**: Primary Tumor samples from TCGA-BRCA.
+- **Subtypes**: PAM50 labels filtered to **Basal** and **Luminal A**.
+- **DE model**: `~ group` with Luminal A as the reference level.
+- **Filtering**: genes with total counts < 10 are removed prior to DESeq2.
+
+## Interpretation Pointers (What to Look For)
+- **PCA**: subtype separation along PC1/PC2 indicates global expression differences.
+- **Volcano plot**: highlights statistically significant genes with large effects.
+- **GSEA**: pathways with high |NES| indicate subtype-specific biology.
 
 ## Limitations & Future Work:
    1. **Survival Integration**: Future phases will integrate clinical survival data (Unix & Cox regression) to link gene expression to patient outcomes.
    2. **Multi-Omics**: Integrating CNV or Methylation data would provide a systems biology view.
+   3. **Covariates & batch**: Adding clinical covariates (age, stage, purity) or batch variables would reduce confounding.
+   
