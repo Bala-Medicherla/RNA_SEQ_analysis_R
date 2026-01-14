@@ -27,14 +27,16 @@ counts_matrix   <- readRDS("data/processed/counts_matrix.rds")
 sample_metadata <- readRDS("data/processed/sample_metadata.rds")
 
 # Identify the column describing sample type (defensive coding)
-sample_type_col <- grep("sample_type", names(sample_metadata), value = TRUE)[1]
+# Identify the column describing sample type (defensive coding)
+# In Phase 2, we look for PAM50 subtype.
+subtype_col <- "BRCA_Subtype_PAM50"
 
-if (is.na(sample_type_col)) {
-  stop("Sample type column not found in sample metadata.")
+if (!subtype_col %in% names(sample_metadata)) {
+  stop("PAM50 subtype column not found in sample metadata.")
 }
 
 # Define analysis groups
-sample_metadata$group <- factor(sample_metadata[[sample_type_col]])
+sample_metadata$group <- factor(sample_metadata[[subtype_col]])
 
 # ----------------------------------------------------------
 # Construct DESeq2 object (needed even for QC)
