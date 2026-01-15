@@ -31,12 +31,36 @@
  **Gene Set Enrichment Analysis (GSEA)**:
    Performs functional enrichment using `fgsea` and the **MSigDB Hallmark** gene sets. This identifies upregulated pathways (e.g., Cell Cycle in Basal) vs downregulated ones (e.g., Estrogen Response).
 
- **Visualization**:
+**Visualization**:
    - **PCA**: To visualize global separation of subtypes.
    - **Volcano Plots**: To view effect sizes vs significant.
    - **Heatmaps**: To view top gene signatures.
    - **GSEA Plots**: To view enriched pathways.
   
+## Results Snapshot
+Below are representative outputs from the pipeline. Each plot is interpreted in the context of
+understanding molecular subtype differences and the functional pathways that distinguish Basal-like from Luminal A tumors.
+
+**PCA (Subtype Separation)**
+Shows global expression separation between Basal and Luminal A, supporting the
+problem statement that subtype heterogeneity drives distinct transcriptomic profiles.
+![PCA plot showing separation of Basal vs Luminal A samples](figures/pca_subtypes.png)
+
+**Volcano Plot (Differential Expression)**
+Highlights genes with strong effect sizes and statistical significance, aligning with
+the objective to identify subtype-defining drivers.
+![Volcano plot for Basal vs Luminal A differential expression](figures/volcano_basal_vs_luminalA.png)
+
+**Top 30 Genes Heatmap**
+Visualizes coherent subtype-specific expression signatures, reinforcing the biological
+distinctness of Basal vs Luminal A tumors.
+![Heatmap of top 30 differentially expressed genes](figures/heatmap_top_genes.png)
+
+**GSEA Summary (Hallmark Pathways)**
+Summarizes pathway-level shifts that contextualize subtype differences in functional
+biology, addressing the pathway analysis objective.
+![GSEA summary of Hallmark pathways](figures/gsea_summary.png)
+
 ## Quick Start (End-to-End)
 1. **Install dependencies** (Bioconductor + CRAN):
    ```r
@@ -74,6 +98,7 @@
 - **Subtypes**: PAM50 labels filtered to **Basal** and **Luminal A**.
 - **DE model**: `~ group` with Luminal A as the reference level.
 - **Filtering**: genes with total counts < 10 are removed prior to DESeq2.
+- **GSEA ranking**: Ensembl IDs are mapped to gene symbols before enrichment.
 
 ## Interpretation Pointers (What to Look For)
 - **PCA**: subtype separation along PC1/PC2 indicates global expression differences.
@@ -84,4 +109,3 @@
    1. **Survival Integration**: Future phases will integrate clinical survival data (Unix & Cox regression) to link gene expression to patient outcomes.
    2. **Multi-Omics**: Integrating CNV or Methylation data would provide a systems biology view.
    3. **Covariates & batch**: Adding clinical covariates (age, stage, purity) or batch variables would reduce confounding.
-   
