@@ -18,7 +18,9 @@ required_packages <- c(
   "ggplot2",
   "pheatmap",
   "fgsea",    # For GSEA
-  "msigdbr"   # For Gene Sets
+  "msigdbr",  # For Gene Sets
+  "AnnotationDbi",
+  "org.Hs.eg.db"
 )
 
 # 3. Install missing packages
