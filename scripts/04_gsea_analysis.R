@@ -33,9 +33,36 @@ de_results <- read.csv("results/deseq2_results_Basal_vs_LuminalA.csv")
 # Using log2FoldChange as the ranking metric for simplicity
 # (Positive = Upregulated in Basal, Negative = Upregulated in Luminal A)
 ranked_genes <- de_results |>
-  filter(!is.na(log2FoldChange) & !is.na(padj)) |>
-  arrange(desc(log2FoldChange)) |>
-  select(gene_id, log2FoldChange)
+  dplyr::filter(!is.na(log2FoldChange) & !is.na(padj)) |>
+  dplyr::arrange(desc(log2FoldChange)) |>
+  dplyr::select(gene_id, log2FoldChange)
+
+gene_ids <- ranked_genes$gene_id
+if (any(grepl("^ENSG", gene_ids))) {
+  message("Detected Ensembl IDs. Mapping to gene symbols for GSEA.")
+  gene_ids <- gsub("\\..*$", "", gene_ids)
+  mapping <- AnnotationDbi::select(
+    org.Hs.eg.db,
+    keys = unique(gene_ids),
+    keytype = "ENSEMBL",
+    columns = "SYMBOL"
+  )
+  ranked_genes <- ranked_genes |>
+    dplyr::mutate(gene_id = gsub("\\..*$", "", gene_id)) |>
+    dplyr::left_join(mapping, by = c("gene_id" = "ENSEMBL")) |>
+    dplyr::filter(!is.na(SYMBOL)) |>
+    dplyr::mutate(gene_id = SYMBOL) |>
+    dplyr::select(gene_id, log2FoldChange)
+}
+
+ranked_genes <- ranked_genes |>
+  dplyr::group_by(gene_id) |>
+  dplyr::summarize(log2FoldChange = max(log2FoldChange), .groups = "drop") |>
+  dplyr::arrange(desc(log2FoldChange))
+
+if (nrow(ranked_genes) == 0) {
+  stop("No genes available for ranking after filtering/mapping.")
+}
 
 gene_ids <- ranked_genes$gene_id
 if (any(grepl("^ENSG", gene_ids))) {
@@ -85,7 +112,7 @@ message("Running GSEA...")
 fgseaRes <- fgsea(pathways = pathways, stats = ranks, minSize=15, maxSize=500)
 
 # Sort by NES (Normalized Enrichment Score)
-fgseaRes <- fgseaRes |> arrange(desc(NES))
+fgseaRes <- fgseaRes |> dplyr::arrange(desc(NES))
 
 # ----------------------------------------------------------
 # Visualize
