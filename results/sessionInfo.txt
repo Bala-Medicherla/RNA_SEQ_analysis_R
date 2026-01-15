@@ -17,15 +17,16 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] msigdbr_25.1.1              fgsea_1.36.2               
- [3] pheatmap_1.0.13             ggplot2_4.0.1              
- [5] DESeq2_1.50.2               dplyr_1.1.4                
- [7] SummarizedExperiment_1.40.0 Biobase_2.70.0             
- [9] GenomicRanges_1.62.1        Seqinfo_1.0.0              
-[11] IRanges_2.44.0              S4Vectors_0.48.0           
-[13] BiocGenerics_0.56.0         generics_0.1.4             
-[15] MatrixGenerics_1.22.0       matrixStats_1.5.0          
-[17] TCGAbiolinks_2.38.0         BiocManager_1.30.27        
+ [1] org.Hs.eg.db_3.22.0         AnnotationDbi_1.72.0       
+ [3] msigdbr_25.1.1              fgsea_1.36.2               
+ [5] pheatmap_1.0.13             ggplot2_4.0.1              
+ [7] DESeq2_1.50.2               dplyr_1.1.4                
+ [9] SummarizedExperiment_1.40.0 Biobase_2.70.0             
+[11] GenomicRanges_1.62.1        Seqinfo_1.0.0              
+[13] IRanges_2.44.0              S4Vectors_0.48.0           
+[15] BiocGenerics_0.56.0         generics_0.1.4             
+[17] MatrixGenerics_1.22.0       matrixStats_1.5.0          
+[19] TCGAbiolinks_2.38.0         BiocManager_1.30.27        
 
 loaded via a namespace (and not attached):
  [1] tidyselect_1.2.1            farver_2.1.2               
@@ -52,19 +53,19 @@ loaded via a namespace (and not attached):
 [43] DBI_1.2.3                   cachem_1.1.0               
 [45] stringr_1.6.0               assertthat_0.2.1           
 [47] parallel_4.5.2              rvest_1.0.5                
-[49] AnnotationDbi_1.72.0        TCGAbiolinksGUI.data_1.30.0
-[51] XVector_0.50.0              vctrs_0.6.5                
-[53] Matrix_1.7-4                jsonlite_2.0.0             
-[55] hms_1.1.4                   bit64_4.6.0-1              
-[57] locfit_1.5-9.12             tidyr_1.3.1                
-[59] glue_1.8.0                  codetools_0.2-20           
-[61] cowplot_1.2.0               stringi_1.8.7              
-[63] gtable_0.3.6                tibble_3.3.0               
-[65] pillar_1.11.1               rappdirs_0.3.3             
-[67] R6_2.6.1                    dbplyr_2.5.1               
-[69] httr2_1.2.2                 evaluate_1.0.5             
-[71] lattice_0.22-7              readr_2.1.6                
-[73] png_0.1-8                   memoise_2.0.1              
-[75] fastmatch_1.1-6             Rcpp_1.1.0                 
-[77] SparseArray_1.10.8          downloader_0.4.1           
-[79] xfun_0.54                   pkgconfig_2.0.3            
+[49] TCGAbiolinksGUI.data_1.30.0 XVector_0.50.0             
+[51] vctrs_0.6.5                 Matrix_1.7-4               
+[53] jsonlite_2.0.0              hms_1.1.4                  
+[55] bit64_4.6.0-1               locfit_1.5-9.12            
+[57] tidyr_1.3.1                 glue_1.8.0                 
+[59] codetools_0.2-20            cowplot_1.2.0              
+[61] stringi_1.8.7               gtable_0.3.6               
+[63] tibble_3.3.0                pillar_1.11.1              
+[65] rappdirs_0.3.3              R6_2.6.1                   
+[67] dbplyr_2.5.1                httr2_1.2.2                
+[69] evaluate_1.0.5              lattice_0.22-7             
+[71] readr_2.1.6                 png_0.1-8                  
+[73] memoise_2.0.1               fastmatch_1.1-6            
+[75] Rcpp_1.1.0                  SparseArray_1.10.8         
+[77] downloader_0.4.1            xfun_0.54                  
+[79] pkgconfig_2.0.3            
