@@ -142,6 +142,14 @@ p_gsea <- ggplot(topPathways, aes(reorder(pathway, NES), NES)) +
 ggsave("figures/gsea_summary.png", p_gsea, width = 8, height = 6)
 
 # Save tables
-write.csv(as.data.frame(fgseaRes), "results/gsea_results.csv", row.names = FALSE)
+fgsea_export <- as.data.frame(fgseaRes)
+if ("leadingEdge" %in% names(fgsea_export)) {
+  fgsea_export$leadingEdge <- vapply(
+    fgsea_export$leadingEdge,
+    function(genes) paste(genes, collapse = ";"),
+    character(1)
+  )
+}
+write.csv(fgsea_export, "results/gsea_results.csv", row.names = FALSE)
 
 message("GSEA analysis completed.")
